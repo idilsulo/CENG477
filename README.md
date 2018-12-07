@@ -4,4 +4,6 @@ Repository that contains all of the course related work (i.e. programming assign
 
 ## Homework 1
 
-## Homework 2
+## [Homework 2](https://github.com/idilsulo/CENG477/tree/master/Homework2)
+The aim of this asignment is to implement Modeling Transformation, Viewing Transformation,
+and Rasterization stages of the Forward Rendering Pipeline.
