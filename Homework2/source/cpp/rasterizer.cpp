@@ -533,77 +533,95 @@ void rasterization_stage(Camera& cam){
                 int y_0 = transformed_models[i].transformed_triangles[j].vertices[k][1];
                 int y_1 = transformed_models[i].transformed_triangles[j].vertices[(k+1)%3][1];
 
-                double m = (y_1-y_0)/(x_1-x_0);
                 int x, y, d;
 
-                if(0.0 <= m && m <= 1.0){
+                /* m = INFINITY
+                x_0 = 100;
+                y_0 = 200;
+                x_1 = 100;
+                y_1 = 400;
+                */
 
-                    y = y_0;    // y = y_0
-                    d = 2*(y_0-y_1)+(x_1-x_0);
+                /* m = 0
+                x_0 = 100;
+                y_0 = 200;
+                x_1 = 600;
+                y_1 = 200;*/
+
+                double m = (double)(y_1-y_0)/(x_1-x_0);
+                //cout << "m: " << m << endl;
+
+                if(0.0 < m && m < 1.0){
+                    x = min(x_0, x_1);
+                    y = min(y_0, y_1);
+
+                    d = 2*abs(y_1-y_0)-abs(x_1-x_0);
                     for(int x = x_0; x < x_1; x++){
-                        image[x][y].r = 100;
-                        image[x][y].g = 100;
-                        image[x][y].b = 100; // draw(x,y)
-                        if(d < 0){
+                        if(d <= 0){          //choose E
+                            d += 2*(y_1-y_0);
+                        }
+                        else{                //choose nE
+                            d += 2*(abs(y_1-y_0)-abs(x_1-x_0));
                             y++;
-                            d += 2*((y_0-y_1)+(x_1-x_0));
                         }
-                        else{
-                            d += 2*(y_0-y_1);
-                        }
-                    }
-                }
-                else if(1.0 < m && m < INFINITY){
-
-                    x = x_0;    // y = y_0
-                    d = 2*(x_0-x_1)+(y_1-y_0);
-                    for(int y = y_0; y < y_1; y++){
                         image[x][y].r = 100;
                         image[x][y].g = 100;
                         image[x][y].b = 100; // draw(x,y)
-                        if(d < 0){
+                    }
+                }
+                else if(1.0 < m){
+                    x = min(x_0, x_1);
+                    y = min(y_0, y_1);
+                    d = 2*abs(x_1-x_0)-abs(y_1-y_0);
+                    for(int y = y_0; y < y_1; y++){
+                        if(d <= 0){             //choose N
+                            d += 2*abs(x_1-x_0);
+                        }
+                        else{                   //choose NE
+                            d += 2*(abs(x_1-x_0)-abs(y_1-y_0));
                             x++;
-                            d += 2*((x_0-x_1)+(y_1-y_0));
                         }
-                        else{
-                            d += 2*(x_0-x_1);
-                        }
-                    }
-                }
-                else if(-INFINITY < m && m < -1.0){
-
-                    x = x_0;    // y = y_0
-                    d = 2*(x_0-x_1)+(y_1-y_0);
-                    for(int y = y_0; y < y_1; y++){
                         image[x][y].r = 100;
                         image[x][y].g = 100;
-                        image[x][y].b = 100; // draw(x,y)
-                        if(d < 0){
-                            x--;
-                            d += 2*((x_0-x_1)+(y_1-y_0));
-                        }
-                        else{
-                            d += 2*(x_0-x_1);
-                        }
+                        image[x][y].b = 100;    // draw(x,y)
                     }
-
                 }
-                else{
+                else if(m  <= 0 && m >= -1.0){
+                    x = min(x_0, x_1);
+                    y = max(y_0, y_1);
 
-                    y = y_0;    // y = y_0
-                    d = 2*(y_0-y_1)+(x_1-x_0);
+                    //y = y_0;    // y = y_0
+                    d = 2*abs(y_1-y_0)-abs(x_1-x_0);
                     for(int x = x_0; x < x_1; x++){
+                        if(d <= 0){             //choose W
+                            d += 2*abs(y_1-y_0);
+                        }
+                        else{                   //choose NW
+                            d += 2*(abs(y_1-y_0)-abs(x_1-x_0));
+                            y--;
+                        }
                         image[x][y].r = 100;
                         image[x][y].g = 100;
-                        image[x][y].b = 100; // draw(x,y)
-                        if(d < 0){
-                            y--;
-                            d += 2*((y_0-y_1)+(x_1-x_0));
-                        }
-                        else{
-                            d += 2*(y_0-y_1);
-                        }
+                        image[x][y].b = 100;    // draw(x,y)
                     }
+                }
+                else if(-1.0 > m){
+                    x = max(x_0, x_1);
+                    y = min(y_0, y_1);
+                    d = 2*abs(x_1-x_0)-abs(y_1-y_0);
+                    for(int y = y_0; y < y_1; y++){
+                        if(d <= 0){             //choose N
+                            d += 2*abs(x_1-x_0);
+                        }
+                        else{                   // choose NW
+                            d += 2*(abs(x_1-x_0)-abs(y_1-y_0));
+                            x--;
+                        }
+                        image[x][y].r = 100;
+                        image[x][y].g = 100;
+                        image[x][y].b = 100;    // draw(x,y)
+                    }
+
                 }
 
             }
