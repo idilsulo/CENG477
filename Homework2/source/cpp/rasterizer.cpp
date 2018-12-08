@@ -45,12 +45,13 @@ Color **image;
 
 typedef struct{
     double vertices[3][3];
-    int color_ids[3];
+    Color colors[3];
 } Triangle_transformed;
 
 typedef struct{
     vector<Triangle_transformed> transformed_triangles;
     int modelId;
+    int numberOfTriangles;
 } Model_transformed;
 
 
@@ -367,51 +368,6 @@ void rotation(Rotation rotation, double rotation_matrix[4][4], double tx, double
     Rx_theta[3][2] = 0.0;
     Rx_theta[3][3] = 1.0;
 
-    /*
-    double T[4][4];
-    double T_inverse[4][4];
-
-    T[0][0] = 1.0;
-    T[0][1] = 0.0;
-    T[0][2] = 0.0;
-    T[0][3] = tx;
-
-    T[1][0] = 0.0;
-    T[1][1] = 1.0;
-    T[1][2] = 0.0;
-    T[1][3] = ty;
-
-    T[2][0] = 0.0;
-    T[2][1] = 0.0;
-    T[2][2] = 1.0;
-    T[2][3] = tz;
-
-    T[3][0] = 0.0;
-    T[3][1] = 0.0;
-    T[3][2] = 0.0;
-    T[3][3] = 1.0;
-
-    T_inverse[0][0] = 1.0;
-    T_inverse[0][1] = 0.0;
-    T_inverse[0][2] = 0.0;
-    T_inverse[0][3] = (-1.0)*tx;
-
-    T_inverse[1][0] = 0.0;
-    T_inverse[1][1] = 1.0;
-    T_inverse[1][2] = 0.0;
-    T_inverse[1][3] = (-1.0)*ty;
-
-    T_inverse[2][0] = 0.0;
-    T_inverse[2][1] = 0.0;
-    T_inverse[2][2] = 1.0;
-    T_inverse[2][3] = (-1.0)*tz;
-
-    T_inverse[3][0] = 0.0;
-    T_inverse[3][1] = 0.0;
-    T_inverse[3][2] = 0.0;
-    T_inverse[3][3] = 1.0;
-    */
-
 
     double Rx_times_M[4][4];
     //multiplyMatrixWithMatrix(rotation_matrix, M, T);
@@ -478,6 +434,7 @@ void transformations_stage(Camera& cam){
 
         Model_transformed transformed_model;
         transformed_model.modelId = models[i].modelId;
+        transformed_model.numberOfTriangles = models[i].numberOfTriangles;
 
 
         double M_model[4][4];
@@ -538,18 +495,18 @@ void transformations_stage(Camera& cam){
                 multiply_3x4_MatrixWithVec4d(Vec3d, M_vp, Vec4d);
 
 
-                transformed_triangle.vertices[k][0] = Vec3d[0];
-                transformed_triangle.vertices[k][1] = Vec3d[1];
-                transformed_triangle.vertices[k][2] = Vec3d[2];
+                transformed_triangle.vertices[k][0] = (int)round(Vec3d[0]);
+                transformed_triangle.vertices[k][1] = (int)round(Vec3d[1]);
+                transformed_triangle.vertices[k][2] = (int)round(Vec3d[2]);
 
                 cout << transformed_triangle.vertices[k][0] << " " <<  transformed_triangle.vertices[k][1] << "  " << transformed_triangle.vertices[k][2] << endl;
 
-                transformed_triangle.color_ids[k] = vertices[models[i].triangles[j].vertexIds[k]].colorId;
+                transformed_triangle.colors[k] = colors[vertices[models[i].triangles[j].vertexIds[k]].colorId];
 
                 //cout << (int)transformed_triangle.vertices[0][0] << "  " << (int)transformed_triangle.vertices[0][1] << endl;
-                image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].r = colors[transformed_triangle.color_ids[k]].r;
-                image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].g = colors[transformed_triangle.color_ids[k]].g;
-                image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].b = colors[transformed_triangle.color_ids[k]].b;
+                image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].r = transformed_triangle.colors[k].r;
+                image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].g = transformed_triangle.colors[k].g;
+                image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].b = transformed_triangle.colors[k].b;
             }
 
             transformed_model.transformed_triangles.push_back(transformed_triangle);
@@ -561,8 +518,97 @@ void transformations_stage(Camera& cam){
 }
 
 
-void rasterization_stage(){
+void rasterization_stage(Camera& cam){
     //cout << transformed_models[0].transformed_triangles[0].vertices[0][0] << endl;
+    for(int i=0; i < numberOfModels; i++){
+
+        for(int j=0; j < transformed_models[i].numberOfTriangles; j++){
+
+
+            for(int k=0; k < 3; k++){
+
+                int x_0 = transformed_models[i].transformed_triangles[j].vertices[k][0];
+                int x_1 = transformed_models[i].transformed_triangles[j].vertices[(k+1)%3][0];
+
+                int y_0 = transformed_models[i].transformed_triangles[j].vertices[k][1];
+                int y_1 = transformed_models[i].transformed_triangles[j].vertices[(k+1)%3][1];
+
+                double m = (y_1-y_0)/(x_1-x_0);
+                int x, y, d;
+
+                if(0.0 <= m && m <= 1.0){
+
+                    y = y_0;    // y = y_0
+                    d = 2*(y_0-y_1)+(x_1-x_0);
+                    for(int x = x_0; x < x_1; x++){
+                        image[x][y].r = 100;
+                        image[x][y].g = 100;
+                        image[x][y].b = 100; // draw(x,y)
+                        if(d < 0){
+                            y++;
+                            d += 2*((y_0-y_1)+(x_1-x_0));
+                        }
+                        else{
+                            d += 2*(y_0-y_1);
+                        }
+                    }
+                }
+                else if(1.0 < m && m < INFINITY){
+
+                    x = x_0;    // y = y_0
+                    d = 2*(x_0-x_1)+(y_1-y_0);
+                    for(int y = y_0; y < y_1; y++){
+                        image[x][y].r = 100;
+                        image[x][y].g = 100;
+                        image[x][y].b = 100; // draw(x,y)
+                        if(d < 0){
+                            x++;
+                            d += 2*((x_0-x_1)+(y_1-y_0));
+                        }
+                        else{
+                            d += 2*(x_0-x_1);
+                        }
+                    }
+                }
+                else if(-INFINITY < m && m < -1.0){
+
+                    x = x_0;    // y = y_0
+                    d = 2*(x_0-x_1)+(y_1-y_0);
+                    for(int y = y_0; y < y_1; y++){
+                        image[x][y].r = 100;
+                        image[x][y].g = 100;
+                        image[x][y].b = 100; // draw(x,y)
+                        if(d < 0){
+                            x--;
+                            d += 2*((x_0-x_1)+(y_1-y_0));
+                        }
+                        else{
+                            d += 2*(x_0-x_1);
+                        }
+                    }
+
+                }
+                else{
+
+                    y = y_0;    // y = y_0
+                    d = 2*(y_0-y_1)+(x_1-x_0);
+                    for(int x = x_0; x < x_1; x++){
+                        image[x][y].r = 100;
+                        image[x][y].g = 100;
+                        image[x][y].b = 100; // draw(x,y)
+                        if(d < 0){
+                            y--;
+                            d += 2*((y_0-y_1)+(x_1-x_0));
+                        }
+                        else{
+                            d += 2*(y_0-y_1);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
 }
 
 void culling_stage(){
@@ -574,7 +620,7 @@ void forwardRenderingPipeline(Camera cam) {
 
     transformations_stage(cam);
     cout << "***********************************" << endl;
-    rasterization_stage();
+    rasterization_stage(cam);
 }
 
 
