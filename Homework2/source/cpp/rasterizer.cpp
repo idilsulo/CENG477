@@ -51,6 +51,7 @@ typedef struct{
 typedef struct{
     vector<Triangle_transformed> transformed_triangles;
     int modelId;
+    int modelType;
     int numberOfTriangles;
 } Model_transformed;
 
@@ -434,6 +435,7 @@ void transformations_stage(Camera& cam){
 
         Model_transformed transformed_model;
         transformed_model.modelId = models[i].modelId;
+        transformed_model.modelType = models[i].type;
         transformed_model.numberOfTriangles = models[i].numberOfTriangles;
 
 
@@ -522,6 +524,12 @@ void midpoint_algorithm(){
     //cout << transformed_models[0].transformed_triangles[0].vertices[0][0] << endl;
     for(int i=0; i < numberOfModels; i++){
 
+        if(transformed_models[i].modelType == 1){
+            /* If model is solid
+               skip midpoint algorithm */
+            continue;
+        }
+
         for(int j=0; j < transformed_models[i].numberOfTriangles; j++){
 
 
@@ -574,24 +582,25 @@ void midpoint_algorithm(){
                     dc.r = (c_1.r - c_0.r)/() */
 
                     for(int x = x_0; x < x_1; x++){
-                        if(d <= 0){          //choose E
+                        if(d < 0){          //choose E
                             d += 2*(y_1-y_0);
                         }
                         else{                //choose nE
                             d += 2*(abs(y_1-y_0)-abs(x_1-x_0));
                             y++;
                         }
-                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
-                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
-                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
+                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(alpha-(x_0-x)))/(double)alpha;
+                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(alpha-(x_0-x)))/(double)alpha;
+                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(alpha-(x_0-x)))/(double)alpha; // draw(x,y)
                     }
                 }
                 else if(1.0 < m){
                     x = min(x_0, x_1);
                     y = min(y_0, y_1);
                     d = 2*abs(x_1-x_0)-abs(y_1-y_0);
+
                     for(int y = y_0; y < y_1; y++){
-                        if(d <= 0){             //choose N
+                        if(d < 0){             //choose N
                             d += 2*abs(x_1-x_0);
                         }
                         else{                   //choose NE
@@ -599,14 +608,14 @@ void midpoint_algorithm(){
                             x++;
                         }
                         if(is_m_infinite){
-                            image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(y_0-y))/(double)alpha;
-                            image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(y_0-y))/(double)alpha;
-                            image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(y_0-y))/(double)alpha; // draw(x,y)
+                            image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(alpha-(y_0-y)))/(double)alpha;
+                            image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(alpha-(y_0-y)))/(double)alpha;
+                            image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(alpha-(y_0-y)))/(double)alpha; // draw(x,y)
                         }
                         else{
-                            image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
-                            image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
-                            image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
+                            image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(alpha-(x_0-x)))/(double)alpha;
+                            image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(alpha-(x_0-x)))/(double)alpha;
+                            image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(alpha-(x_0-x)))/(double)alpha; // draw(x,y)
                         }
 
                     }
@@ -618,16 +627,16 @@ void midpoint_algorithm(){
                     //y = y_0;    // y = y_0
                     d = 2*abs(y_1-y_0)-abs(x_1-x_0);
                     for(int x = x_0; x < x_1; x++){
-                        if(d <= 0){             //choose W
+                        if(d < 0){             //choose W
                             d += 2*abs(y_1-y_0);
                         }
                         else{                   //choose NW
                             d += 2*(abs(y_1-y_0)-abs(x_1-x_0));
                             y--;
                         }
-                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
-                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
-                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
+                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(alpha-(x_0-x)))/(double)alpha;
+                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(alpha-(x_0-x)))/(double)alpha;
+                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(alpha-(x_0-x)))/(double)alpha; // draw(x,y)
                     }
                 }
                 else if(-1.0 > m){
@@ -635,7 +644,7 @@ void midpoint_algorithm(){
                     y = min(y_0, y_1);
                     d = 2*abs(x_1-x_0)-abs(y_1-y_0);
                     for(int y = y_0; y < y_1; y++){
-                        if(d <= 0){             //choose N
+                        if(d < 0){             //choose N
                             d += 2*abs(x_1-x_0);
                         }
                         else{                   // choose NW
@@ -661,6 +670,70 @@ void midpoint_algorithm(){
     }
 }
 
+int f_01(int x, int y, int x_0, int y_0, int x_1, int y_1){
+    return x*(y_0-y_1) + y*(x_1-x_0) + x_0*y_1 - y_0*x_1;
+}
+
+int f_12(int x, int y, int x_1, int y_1, int x_2, int y_2){
+    return x*(y_1-y_2) + y*(x_2-x_1) + x_1*y_2 - y_1*x_2;
+}
+
+int f_20(int x, int y, int x_0, int y_0, int x_2, int y_2){
+    return x*(y_2-y_0) + y*(x_0-x_2) + x_2*y_0 - y_2*x_0;
+}
+
+int smallest(int x, int y, int z){
+    return min(min(x, y), z);
+}
+
+int largest(int x, int y, int z){
+    return max(max(x, y), z);
+}
+
+void triangle_rasterization(){
+    for(int i=0; i < numberOfModels; i++){
+        if(transformed_models[i].modelType == 0){
+            continue;
+        }
+        for(int j=0; j < transformed_models[i].numberOfTriangles; j++){
+            int x_0 = transformed_models[i].transformed_triangles[j].vertices[0][0];
+            int x_1 = transformed_models[i].transformed_triangles[j].vertices[1][0];
+            int x_2 = transformed_models[i].transformed_triangles[j].vertices[2][0];
+
+            int y_0 = transformed_models[i].transformed_triangles[j].vertices[0][1];
+            int y_1 = transformed_models[i].transformed_triangles[j].vertices[1][1];
+            int y_2 = transformed_models[i].transformed_triangles[j].vertices[2][1];
+
+
+            Color c_0 = transformed_models[i].transformed_triangles[j].colors[0];
+            Color c_1 = transformed_models[i].transformed_triangles[j].colors[1];
+            Color c_2 = transformed_models[i].transformed_triangles[j].colors[2];
+
+            int x_min = smallest(x_0, x_1, x_2);
+            int y_min = smallest(y_0, y_1, y_2);
+
+            int x_max = largest(x_0, x_1, x_2);
+            int y_max = largest(x_0, x_1, x_2);
+
+            for(int y=y_min; y < y_max; y++){
+                for(int x=x_min; x < x_max; x++){
+                    double alpha = (double)f_12(x, y, x_1, y_1, x_2, y_2)/(double)f_12(x_0, y_0, x_1, y_1, x_2, y_2);
+                    double beta = (double)f_20(x, y, x_0, y_0, x_2, y_2)/(double)f_20(x_1, y_1, x_0, y_0, x_2, y_2);
+                    double gama = (double)f_01(x, y, x_0, y_0, x_1, y_1)/(double)f_01(x_2, y_2, x_0, y_0, x_1, y_1);
+
+                    if(alpha >= 0 && beta >= 0 && gama >= 0){
+                        image[x][y].r = alpha*c_0.r + beta*c_1.r + gama*c_2.r;
+                        image[x][y].g = alpha*c_0.g + beta*c_1.g + gama*c_2.g;
+                        image[x][y].b = alpha*c_0.b + beta*c_1.b + gama*c_2.b;
+                    }
+                }
+            }
+
+
+        }
+    }
+}
+
 void clear_transformed_models(){
     for(int i=0; i < numberOfModels; i++){
         transformed_models[i].transformed_triangles.clear();
@@ -673,7 +746,7 @@ void rasterization_stage(Camera& cam){
     /* Draw the boundaries for the models using the
        midpoint line drawing algorithm */
     midpoint_algorithm();
-
+    triangle_rasterization();
     /* Clear transformed models for the next
        iteration */
     clear_transformed_models();
