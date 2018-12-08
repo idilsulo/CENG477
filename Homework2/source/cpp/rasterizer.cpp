@@ -504,9 +504,9 @@ void transformations_stage(Camera& cam){
                 transformed_triangle.colors[k] = colors[vertices[models[i].triangles[j].vertexIds[k]].colorId];
 
                 //cout << (int)transformed_triangle.vertices[0][0] << "  " << (int)transformed_triangle.vertices[0][1] << endl;
-                image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].r = transformed_triangle.colors[k].r;
-                image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].g = transformed_triangle.colors[k].g;
-                image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].b = transformed_triangle.colors[k].b;
+                //image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].r = transformed_triangle.colors[k].r;
+                //image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].g = transformed_triangle.colors[k].g;
+                //image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].b = transformed_triangle.colors[k].b;
             }
 
             transformed_model.transformed_triangles.push_back(transformed_triangle);
@@ -518,7 +518,7 @@ void transformations_stage(Camera& cam){
 }
 
 
-void rasterization_stage(Camera& cam){
+void midpoint_algorithm(){
     //cout << transformed_models[0].transformed_triangles[0].vertices[0][0] << endl;
     for(int i=0; i < numberOfModels; i++){
 
@@ -533,8 +533,12 @@ void rasterization_stage(Camera& cam){
                 int y_0 = transformed_models[i].transformed_triangles[j].vertices[k][1];
                 int y_1 = transformed_models[i].transformed_triangles[j].vertices[(k+1)%3][1];
 
+                Color c_0 = transformed_models[i].transformed_triangles[j].colors[k];
+                Color c_1 = transformed_models[i].transformed_triangles[j].colors[(k+1)%3];
+
                 int x, y, d;
 
+                // Examples for other slop ranges:
                 /* m = INFINITY
                 x_0 = 100;
                 y_0 = 200;
@@ -549,13 +553,26 @@ void rasterization_stage(Camera& cam){
                 y_1 = 200;*/
 
                 double m = (double)(y_1-y_0)/(x_1-x_0);
-                //cout << "m: " << m << endl;
+                double alpha = abs(x_1-x_0);
+
+                bool is_m_infinite = false;
+                if(abs(x_1-x_0) == 0){
+                    alpha = abs(y_1-y_0);
+                    is_m_infinite = true;
+                }
 
                 if(0.0 < m && m < 1.0){
                     x = min(x_0, x_1);
                     y = min(y_0, y_1);
 
                     d = 2*abs(y_1-y_0)-abs(x_1-x_0);
+
+                    /*c.r = c_0.r;
+                    c.g = c_0.g;
+                    c.b = c_0.b;
+
+                    dc.r = (c_1.r - c_0.r)/() */
+
                     for(int x = x_0; x < x_1; x++){
                         if(d <= 0){          //choose E
                             d += 2*(y_1-y_0);
@@ -564,9 +581,9 @@ void rasterization_stage(Camera& cam){
                             d += 2*(abs(y_1-y_0)-abs(x_1-x_0));
                             y++;
                         }
-                        image[x][y].r = 100;
-                        image[x][y].g = 100;
-                        image[x][y].b = 100; // draw(x,y)
+                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
+                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
+                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
                     }
                 }
                 else if(1.0 < m){
@@ -581,9 +598,17 @@ void rasterization_stage(Camera& cam){
                             d += 2*(abs(x_1-x_0)-abs(y_1-y_0));
                             x++;
                         }
-                        image[x][y].r = 100;
-                        image[x][y].g = 100;
-                        image[x][y].b = 100;    // draw(x,y)
+                        if(is_m_infinite){
+                            image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(y_0-y))/(double)alpha;
+                            image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(y_0-y))/(double)alpha;
+                            image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(y_0-y))/(double)alpha; // draw(x,y)
+                        }
+                        else{
+                            image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
+                            image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
+                            image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
+                        }
+
                     }
                 }
                 else if(m  <= 0 && m >= -1.0){
@@ -600,9 +625,9 @@ void rasterization_stage(Camera& cam){
                             d += 2*(abs(y_1-y_0)-abs(x_1-x_0));
                             y--;
                         }
-                        image[x][y].r = 100;
-                        image[x][y].g = 100;
-                        image[x][y].b = 100;    // draw(x,y)
+                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
+                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
+                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
                     }
                 }
                 else if(-1.0 > m){
@@ -617,9 +642,16 @@ void rasterization_stage(Camera& cam){
                             d += 2*(abs(x_1-x_0)-abs(y_1-y_0));
                             x--;
                         }
-                        image[x][y].r = 100;
-                        image[x][y].g = 100;
-                        image[x][y].b = 100;    // draw(x,y)
+                        if(is_m_infinite){
+                            image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(y_0-y))/(double)alpha;
+                            image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(y_0-y))/(double)alpha;
+                            image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(y_0-y))/(double)alpha; // draw(x,y)
+                        }
+                        else{
+                            image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
+                            image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
+                            image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
+                        }
                     }
 
                 }
@@ -627,6 +659,25 @@ void rasterization_stage(Camera& cam){
             }
         }
     }
+}
+
+void clear_transformed_models(){
+    for(int i=0; i < numberOfModels; i++){
+        transformed_models[i].transformed_triangles.clear();
+    }
+    transformed_models.clear();
+}
+
+void rasterization_stage(Camera& cam){
+
+    /* Draw the boundaries for the models using the
+       midpoint line drawing algorithm */
+    midpoint_algorithm();
+
+    /* Clear transformed models for the next
+       iteration */
+    clear_transformed_models();
+
 }
 
 void culling_stage(){
