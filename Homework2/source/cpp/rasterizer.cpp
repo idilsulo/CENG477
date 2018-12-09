@@ -462,6 +462,8 @@ void transformations_stage(Camera& cam){
         for(int j=0; j < _numberOfTriangles; j++){
 
             Triangle_transformed transformed_triangle;
+            bool isVisible = true;
+            Vec3 v_0, v_1, v_2;
 
             for(int k=0; k < 3; k++){
                 double Vec4d[4];
@@ -470,29 +472,33 @@ void transformations_stage(Camera& cam){
                 Vec4d[2] = vertices[models[i].triangles[j].vertexIds[k]].z;
                 Vec4d[3] = 1.0;
 
-                // DO NOT OPEN
-                // GIVES NAN
-                //cout << "Vec4d2: " << Vec4d[2] << endl;
                 double Vec4d_temp[4];
                 multiplyMatrixWithVec4d(Vec4d_temp, M_result, Vec4d);
                 deepcopyVec4(Vec4d, Vec4d_temp);
 
-                /*cout << Vec4d[0] << " " << Vec4d[1] << " " << Vec4d[2] << "  " << Vec4d[3] << endl;
-                cout << Vec4d_temp[0] << " " << Vec4d_temp[1] << " " << Vec4d_temp[2] << "  " << Vec4d_temp[3] << endl;
-                cout << "##############" << endl;
-                */
+
+                if(k == 0){
+                    v_0.x = Vec4d[0];
+                    v_0.y = Vec4d[1];
+                    v_0.z = Vec4d[2];
+                }
+                else if(k == 1){
+                    v_1.x = Vec4d[0];
+                    v_1.y = Vec4d[1];
+                    v_1.z = Vec4d[2];
+                }
+                else{
+                    v_2.x = Vec4d[0];
+                    v_2.y = Vec4d[1];
+                    v_2.z = Vec4d[2];
+                }
+
                 Vec4d[0] /= Vec4d[3];
                 Vec4d[1] /= Vec4d[3];
                 Vec4d[2] /= Vec4d[3];
                 Vec4d[3] /= Vec4d[3];
 
-                //cout << Vec4d[0] << " " << Vec4d[1] << " " << Vec4d[2] << "  " << Vec4d[3] << endl;
 
-                /*
-                cout <<  "Vec4d1: " << Vec4d[0] << endl;
-                cout <<  "Vec4d2: " << Vec4d[1] << endl;
-                cout <<  "Vec4d3: " << Vec4d[2] << endl;
-                */
                 double Vec3d[3];
                 multiply_3x4_MatrixWithVec4d(Vec3d, M_vp, Vec4d);
 
@@ -501,7 +507,7 @@ void transformations_stage(Camera& cam){
                 transformed_triangle.vertices[k][1] = (int)round(Vec3d[1]);
                 transformed_triangle.vertices[k][2] = (int)round(Vec3d[2]);
 
-                cout << transformed_triangle.vertices[k][0] << " " <<  transformed_triangle.vertices[k][1] << "  " << transformed_triangle.vertices[k][2] << endl;
+                //cout << transformed_triangle.vertices[k][0] << " " <<  transformed_triangle.vertices[k][1] << "  " << transformed_triangle.vertices[k][2] << endl;
 
                 transformed_triangle.colors[k] = colors[vertices[models[i].triangles[j].vertexIds[k]].colorId];
 
@@ -511,7 +517,38 @@ void transformations_stage(Camera& cam){
                 //image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].b = transformed_triangle.colors[k].b;
             }
 
-            transformed_model.transformed_triangles.push_back(transformed_triangle);
+            /*******************************CULLING***********************************/
+            if(backfaceCullingSetting){
+
+                Vec3 normal = crossProductVec3(subtractVec3(v_1, v_0), subtractVec3(v_2, v_0));
+                Vec3 eye_to_point = subtractVec3(v_0, cam.pos);
+
+                Vec3 v;
+                v.x = (v_0.x + v_1.x + v_2.x)/3.0;
+                v.y = (v_0.y + v_1.y + v_2.y)/3.0;
+                v.z = (v_0.z + v_1.z + v_2.z)/3.0;
+
+
+                if(dotProductVec3(normal, eye_to_point) > 0){
+                    isVisible = true;
+                }
+                else{
+                    isVisible = false;
+                    /*cout << "v_0.x: " << v_0.x << " v_0.y: " << v_0.y << " v_0.z: " << v_0.z << endl;
+                    cout << "v_1.x: " << v_1.x << " v_1.y: " << v_1.y << " v_1.z: " << v_1.z << endl;
+                    cout << "v_2.x: " << v_2.x << " v_2.y: " << v_2.y << " v_2.z: " << v_2.z << endl;*/
+                }
+            }
+            /*************************************************************************/
+            if(isVisible){
+
+                transformed_model.transformed_triangles.push_back(transformed_triangle);
+            }
+            else{
+                //int numTriangle = transformed_model.numberOfTriangles;
+                //transformed_model.numberOfTriangles = numTriangle-1;
+                transformed_model.numberOfTriangles--;
+            }
 
         }
 
@@ -531,7 +568,11 @@ void midpoint_algorithm(){
         }
 
         for(int j=0; j < transformed_models[i].numberOfTriangles; j++){
+            //cout << transformed_models[i].numberOfTriangles << endl;
 
+            cout << transformed_models[i].transformed_triangles[j].vertices[0][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[0][1] << endl;
+            cout << transformed_models[i].transformed_triangles[j].vertices[1][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[1][1] << endl;
+            cout << transformed_models[i].transformed_triangles[j].vertices[2][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[2][1] << endl;
 
             for(int k=0; k < 3; k++){
 
@@ -560,14 +601,10 @@ void midpoint_algorithm(){
                 x_1 = 600;
                 y_1 = 200;*/
 
-                double m = (double)(y_1-y_0)/(x_1-x_0);
+                double m = (double)(y_1-y_0)/(double)(x_1-x_0);
                 double alpha = abs(x_1-x_0);
 
-                bool is_m_infinite = false;
-                if(abs(x_1-x_0) == 0){
-                    alpha = abs(y_1-y_0);
-                    is_m_infinite = true;
-                }
+
 
                 if(0.0 < m && m < 1.0){
                     x = min(x_0, x_1);
@@ -575,23 +612,17 @@ void midpoint_algorithm(){
 
                     d = 2*abs(y_1-y_0)-abs(x_1-x_0);
 
-                    /*c.r = c_0.r;
-                    c.g = c_0.g;
-                    c.b = c_0.b;
-
-                    dc.r = (c_1.r - c_0.r)/() */
-
-                    for(int x = x_0; x < x_1; x++){
-                        if(d < 0){          //choose E
-                            d += 2*(y_1-y_0);
+                    for(x; x < max(x_0,x_1); x++){
+                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
+                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
+                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
+                        if(d <= 0){          //choose E
+                            d += 2*abs(y_1-y_0);
                         }
-                        else{                //choose nE
+                        else{                //choose NE
                             d += 2*(abs(y_1-y_0)-abs(x_1-x_0));
                             y++;
                         }
-                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(alpha-(x_0-x)))/(double)alpha;
-                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(alpha-(x_0-x)))/(double)alpha;
-                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(alpha-(x_0-x)))/(double)alpha; // draw(x,y)
                     }
                 }
                 else if(1.0 < m){
@@ -599,67 +630,52 @@ void midpoint_algorithm(){
                     y = min(y_0, y_1);
                     d = 2*abs(x_1-x_0)-abs(y_1-y_0);
 
-                    for(int y = y_0; y < y_1; y++){
-                        if(d < 0){             //choose N
+                    for(y; y < max(y_0,y_1); y++){
+                        image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(y_0-y))/(double)abs(y_1-y_0);
+                        image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(y_0-y))/(double)abs(y_1-y_0);
+                        image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(y_0-y))/(double)abs(y_1-y_0); // draw(x,y)
+                        if(d <= 0){             //choose N
                             d += 2*abs(x_1-x_0);
+
                         }
                         else{                   //choose NE
                             d += 2*(abs(x_1-x_0)-abs(y_1-y_0));
                             x++;
                         }
-                        if(is_m_infinite){
-                            image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(alpha-(y_0-y)))/(double)alpha;
-                            image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(alpha-(y_0-y)))/(double)alpha;
-                            image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(alpha-(y_0-y)))/(double)alpha; // draw(x,y)
-                        }
-                        else{
-                            image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(alpha-(x_0-x)))/(double)alpha;
-                            image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(alpha-(x_0-x)))/(double)alpha;
-                            image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(alpha-(x_0-x)))/(double)alpha; // draw(x,y)
-                        }
-
                     }
                 }
                 else if(m  <= 0 && m >= -1.0){
                     x = min(x_0, x_1);
                     y = max(y_0, y_1);
 
-                    //y = y_0;    // y = y_0
                     d = 2*abs(y_1-y_0)-abs(x_1-x_0);
-                    for(int x = x_0; x < x_1; x++){
-                        if(d < 0){             //choose W
+                    for(x; x < max(x_0,x_1); x++){
+                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
+                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
+                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
+                        if(d <= 0){             //choose W
                             d += 2*abs(y_1-y_0);
                         }
                         else{                   //choose NW
                             d += 2*(abs(y_1-y_0)-abs(x_1-x_0));
                             y--;
                         }
-                        image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(alpha-(x_0-x)))/(double)alpha;
-                        image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(alpha-(x_0-x)))/(double)alpha;
-                        image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(alpha-(x_0-x)))/(double)alpha; // draw(x,y)
                     }
                 }
                 else if(-1.0 > m){
                     x = max(x_0, x_1);
                     y = min(y_0, y_1);
                     d = 2*abs(x_1-x_0)-abs(y_1-y_0);
-                    for(int y = y_0; y < y_1; y++){
-                        if(d < 0){             //choose N
+                    for(y; y < max(y_0, y_1); y++){
+                        image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(y_0-y))/(double)abs(y_1-y_0);
+                        image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(y_0-y))/(double)abs(y_1-y_0);
+                        image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(y_0-y))/(double)abs(y_1-y_0); // draw(x,y)
+                        if(d <= 0){             //choose N
                             d += 2*abs(x_1-x_0);
                         }
                         else{                   // choose NW
                             d += 2*(abs(x_1-x_0)-abs(y_1-y_0));
                             x--;
-                        }
-                        if(is_m_infinite){
-                            image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(y_0-y))/(double)alpha;
-                            image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(y_0-y))/(double)alpha;
-                            image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(y_0-y))/(double)alpha; // draw(x,y)
-                        }
-                        else{
-                            image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
-                            image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
-                            image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
                         }
                     }
 
@@ -713,7 +729,7 @@ void triangle_rasterization(){
             int y_min = smallest(y_0, y_1, y_2);
 
             int x_max = largest(x_0, x_1, x_2);
-            int y_max = largest(x_0, x_1, x_2);
+            int y_max = largest(y_0, y_1, y_2);
 
             for(int y=y_min; y < y_max; y++){
                 for(int x=x_min; x < x_max; x++){
