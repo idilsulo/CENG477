@@ -503,9 +503,9 @@ void transformations_stage(Camera& cam){
                 multiply_3x4_MatrixWithVec4d(Vec3d, M_vp, Vec4d);
 
 
-                transformed_triangle.vertices[k][0] = (int)round(Vec3d[0]);
-                transformed_triangle.vertices[k][1] = (int)round(Vec3d[1]);
-                transformed_triangle.vertices[k][2] = (int)round(Vec3d[2]);
+                transformed_triangle.vertices[k][0] = (int)(Vec3d[0]);
+                transformed_triangle.vertices[k][1] = (int)(Vec3d[1]);
+                transformed_triangle.vertices[k][2] = (int)(Vec3d[2]);
 
                 //cout << transformed_triangle.vertices[k][0] << " " <<  transformed_triangle.vertices[k][1] << "  " << transformed_triangle.vertices[k][2] << endl;
 
