@@ -269,7 +269,7 @@ void rotation(Rotation rotation, double rotation_matrix[4][4], double tx, double
          v.y = (-1.0)*u.z;
          v.z = u.y;
      }
-     else if(element_index = 'y'){
+     else if(element_index == 'y'){
          v.x = (-1.0)*u.z;
          v.y = 0.0;
          v.z = u.x;
@@ -521,7 +521,7 @@ void transformations_stage(Camera& cam){
             if(backfaceCullingSetting){
 
                 Vec3 normal = crossProductVec3(subtractVec3(v_1, v_0), subtractVec3(v_2, v_0));
-                Vec3 eye_to_point = subtractVec3(v_0, cam.pos);
+                Vec3 eye_to_point = subtractVec3(v_0, cam.v);
 
                 Vec3 v;
                 v.x = (v_0.x + v_1.x + v_2.x)/3.0;
