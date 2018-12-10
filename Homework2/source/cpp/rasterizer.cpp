@@ -121,11 +121,6 @@ void camera_transformations(Camera& cam, double M_cam[4][4]){
     M_cam[3][2] = 0.0;
     M_cam[3][3] = 1.0;
 
-    //cout << "#######################################" << endl;
-    //cout << cam.pos.x << "  " << cam.pos.y << "  " << cam.pos.z << endl;
-    //cout << cam.gaze.x << "  " << cam.gaze.y << "  " << cam.gaze.z << endl;
-    //cout << "#######################################" << endl;
-
 }
 
 void perspective_projection(Camera& cam, double M_per[4][4]){
@@ -371,10 +366,10 @@ void rotation(Rotation rotation, double rotation_matrix[4][4], double tx, double
 
 
     double Rx_times_M[4][4];
-    //multiplyMatrixWithMatrix(rotation_matrix, M, T);
+
     multiplyMatrixWithMatrix(Rx_times_M, Rx_theta, M);
     multiplyMatrixWithMatrix(rotation_matrix, M_inverse, Rx_times_M);
-    //multiplyMatrixWithMatrix(rotation_matrix, T_inverse, rotation_matrix);
+
 }
 
 
@@ -452,12 +447,7 @@ void transformations_stage(Camera& cam){
         double M_result[4][4];
         multiplyMatrixWithMatrix(M_temp, M_cam, M_model);
         multiplyMatrixWithMatrix(M_result, M_per, M_temp);
-        /*
-        cout << M_result[0][0] << "  " <<  M_result[0][1]<< "  " << M_result[0][2] << "  " << M_result[0][3] << endl;
-        cout << M_result[1][0] << "  " <<  M_result[1][1]<< "  " << M_result[1][2] << "  " << M_result[1][3] << endl;
-        cout << M_result[2][0] << "  " <<  M_result[2][1]<< "  " << M_result[2][2] << "  " << M_result[2][3] << endl;
-        cout << M_result[3][0] << "  " <<  M_result[3][1]<< "  " << M_result[3][2] << "  " << M_result[3][3] << endl;
-        */
+
         int _numberOfTriangles = models[i].numberOfTriangles;
         for(int j=0; j < _numberOfTriangles; j++){
 
@@ -511,7 +501,6 @@ void transformations_stage(Camera& cam){
 
                 transformed_triangle.colors[k] = colors[vertices[models[i].triangles[j].vertexIds[k]].colorId];
 
-                //cout << (int)transformed_triangle.vertices[0][0] << "  " << (int)transformed_triangle.vertices[0][1] << endl;
                 //image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].r = transformed_triangle.colors[k].r;
                 //image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].g = transformed_triangle.colors[k].g;
                 //image[(int)round(transformed_triangle.vertices[k][0])][(int)round(transformed_triangle.vertices[k][1])].b = transformed_triangle.colors[k].b;
@@ -523,10 +512,10 @@ void transformations_stage(Camera& cam){
                 Vec3 normal = crossProductVec3(subtractVec3(v_1, v_0), subtractVec3(v_2, v_0));
                 Vec3 eye_to_point = subtractVec3(v_0, cam.v);
 
-                Vec3 v;
+                /*Vec3 v;
                 v.x = (v_0.x + v_1.x + v_2.x)/3.0;
                 v.y = (v_0.y + v_1.y + v_2.y)/3.0;
-                v.z = (v_0.z + v_1.z + v_2.z)/3.0;
+                v.z = (v_0.z + v_1.z + v_2.z)/3.0;*/
 
 
                 if(dotProductVec3(normal, eye_to_point) > 0){
@@ -534,9 +523,6 @@ void transformations_stage(Camera& cam){
                 }
                 else{
                     isVisible = false;
-                    /*cout << "v_0.x: " << v_0.x << " v_0.y: " << v_0.y << " v_0.z: " << v_0.z << endl;
-                    cout << "v_1.x: " << v_1.x << " v_1.y: " << v_1.y << " v_1.z: " << v_1.z << endl;
-                    cout << "v_2.x: " << v_2.x << " v_2.y: " << v_2.y << " v_2.z: " << v_2.z << endl;*/
                 }
             }
             /*************************************************************************/
@@ -545,8 +531,7 @@ void transformations_stage(Camera& cam){
                 transformed_model.transformed_triangles.push_back(transformed_triangle);
             }
             else{
-                //int numTriangle = transformed_model.numberOfTriangles;
-                //transformed_model.numberOfTriangles = numTriangle-1;
+
                 transformed_model.numberOfTriangles--;
             }
 
@@ -558,7 +543,7 @@ void transformations_stage(Camera& cam){
 
 
 void midpoint_algorithm(){
-    //cout << transformed_models[0].transformed_triangles[0].vertices[0][0] << endl;
+
     for(int i=0; i < numberOfModels; i++){
 
         if(transformed_models[i].modelType == 1){
@@ -568,11 +553,11 @@ void midpoint_algorithm(){
         }
 
         for(int j=0; j < transformed_models[i].numberOfTriangles; j++){
-            //cout << transformed_models[i].numberOfTriangles << endl;
 
-            cout << transformed_models[i].transformed_triangles[j].vertices[0][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[0][1] << endl;
-            cout << transformed_models[i].transformed_triangles[j].vertices[1][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[1][1] << endl;
-            cout << transformed_models[i].transformed_triangles[j].vertices[2][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[2][1] << endl;
+
+            //cout << transformed_models[i].transformed_triangles[j].vertices[0][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[0][1] << endl;
+            //cout << transformed_models[i].transformed_triangles[j].vertices[1][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[1][1] << endl;
+            //cout << transformed_models[i].transformed_triangles[j].vertices[2][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[2][1] << endl;
 
             for(int k=0; k < 3; k++){
 
@@ -612,7 +597,7 @@ void midpoint_algorithm(){
 
                     d = 2*abs(y_1-y_0)-abs(x_1-x_0);
 
-                    for(x; x < max(x_0,x_1); x++){
+                    for( ; x < max(x_0,x_1); x++){
                         image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
                         image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
                         image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
@@ -630,7 +615,7 @@ void midpoint_algorithm(){
                     y = min(y_0, y_1);
                     d = 2*abs(x_1-x_0)-abs(y_1-y_0);
 
-                    for(y; y < max(y_0,y_1); y++){
+                    for( ; y < max(y_0,y_1); y++){
                         image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(y_0-y))/(double)abs(y_1-y_0);
                         image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(y_0-y))/(double)abs(y_1-y_0);
                         image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(y_0-y))/(double)abs(y_1-y_0); // draw(x,y)
@@ -649,7 +634,7 @@ void midpoint_algorithm(){
                     y = max(y_0, y_1);
 
                     d = 2*abs(y_1-y_0)-abs(x_1-x_0);
-                    for(x; x < max(x_0,x_1); x++){
+                    for( ; x < max(x_0,x_1); x++){
                         image[x][y].r = (double)(c_0.r*abs(x-x_1) + c_1.r*abs(x_0-x))/(double)alpha;
                         image[x][y].g = (double)(c_0.g*abs(x-x_1) + c_1.g*abs(x_0-x))/(double)alpha;
                         image[x][y].b = (double)(c_0.b*abs(x-x_1) + c_1.b*abs(x_0-x))/(double)alpha; // draw(x,y)
@@ -666,7 +651,7 @@ void midpoint_algorithm(){
                     x = max(x_0, x_1);
                     y = min(y_0, y_1);
                     d = 2*abs(x_1-x_0)-abs(y_1-y_0);
-                    for(y; y < max(y_0, y_1); y++){
+                    for( ; y < max(y_0, y_1); y++){
                         image[x][y].r = (double)(c_0.r*abs(y-y_1) + c_1.r*abs(y_0-y))/(double)abs(y_1-y_0);
                         image[x][y].g = (double)(c_0.g*abs(y-y_1) + c_1.g*abs(y_0-y))/(double)abs(y_1-y_0);
                         image[x][y].b = (double)(c_0.b*abs(y-y_1) + c_1.b*abs(y_0-y))/(double)abs(y_1-y_0); // draw(x,y)
@@ -777,7 +762,7 @@ void forwardRenderingPipeline(Camera cam) {
     // TODO: IMPLEMENT HERE
 
     transformations_stage(cam);
-    cout << "***********************************" << endl;
+    //cout << "***********************************" << endl;
     rasterization_stage(cam);
 }
 
