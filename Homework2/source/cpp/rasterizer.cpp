@@ -716,8 +716,8 @@ void triangle_rasterization(){
             int x_max = largest(x_0, x_1, x_2);
             int y_max = largest(y_0, y_1, y_2);
 
-            for(int y=y_min; y < y_max; y++){
-                for(int x=x_min; x < x_max; x++){
+            for(int y=y_min; y <= y_max; y++){
+                for(int x=x_min; x <= x_max; x++){
                     double alpha = (double)f_12(x, y, x_1, y_1, x_2, y_2)/(double)f_12(x_0, y_0, x_1, y_1, x_2, y_2);
                     double beta = (double)f_20(x, y, x_0, y_0, x_2, y_2)/(double)f_20(x_1, y_1, x_0, y_0, x_2, y_2);
                     double gama = (double)f_01(x, y, x_0, y_0, x_1, y_1)/(double)f_01(x_2, y_2, x_0, y_0, x_1, y_1);
