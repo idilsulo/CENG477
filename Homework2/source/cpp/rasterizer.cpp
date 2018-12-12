@@ -542,33 +542,33 @@ void transformations_stage(Camera& cam){
 }
 
 
-void midpoint_algorithm(){
+void midpoint_algorithm(Model_transformed model){
 
-    for(int i=0; i < numberOfModels; i++){
+    //for(int i=0; i < numberOfModels; i++){
 
-        if(transformed_models[i].modelType == 1){
+        if(model.modelType == 1){
             /* If model is solid
                skip midpoint algorithm */
-            continue;
+            return;
         }
 
-        for(int j=0; j < transformed_models[i].numberOfTriangles; j++){
+        for(int j=0; j < model.numberOfTriangles; j++){
 
 
-            //cout << transformed_models[i].transformed_triangles[j].vertices[0][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[0][1] << endl;
-            //cout << transformed_models[i].transformed_triangles[j].vertices[1][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[1][1] << endl;
-            //cout << transformed_models[i].transformed_triangles[j].vertices[2][0] << "  " << transformed_models[i].transformed_triangles[j].vertices[2][1] << endl;
+            //cout << model.transformed_triangles[j].vertices[0][0] << "  " << model.transformed_triangles[j].vertices[0][1] << endl;
+            //cout << model.transformed_triangles[j].vertices[1][0] << "  " << model.transformed_triangles[j].vertices[1][1] << endl;
+            //cout << model.transformed_triangles[j].vertices[2][0] << "  " << model.transformed_triangles[j].vertices[2][1] << endl;
 
             for(int k=0; k < 3; k++){
 
-                int x_0 = transformed_models[i].transformed_triangles[j].vertices[k][0];
-                int x_1 = transformed_models[i].transformed_triangles[j].vertices[(k+1)%3][0];
+                int x_0 = model.transformed_triangles[j].vertices[k][0];
+                int x_1 = model.transformed_triangles[j].vertices[(k+1)%3][0];
 
-                int y_0 = transformed_models[i].transformed_triangles[j].vertices[k][1];
-                int y_1 = transformed_models[i].transformed_triangles[j].vertices[(k+1)%3][1];
+                int y_0 = model.transformed_triangles[j].vertices[k][1];
+                int y_1 = model.transformed_triangles[j].vertices[(k+1)%3][1];
 
-                Color c_0 = transformed_models[i].transformed_triangles[j].colors[k];
-                Color c_1 = transformed_models[i].transformed_triangles[j].colors[(k+1)%3];
+                Color c_0 = model.transformed_triangles[j].colors[k];
+                Color c_1 = model.transformed_triangles[j].colors[(k+1)%3];
 
                 int x, y, d;
 
@@ -668,7 +668,7 @@ void midpoint_algorithm(){
 
             }
         }
-    }
+    //}
 }
 
 int f_01(int x, int y, int x_0, int y_0, int x_1, int y_1){
@@ -691,24 +691,25 @@ int largest(int x, int y, int z){
     return max(max(x, y), z);
 }
 
-void triangle_rasterization(){
-    for(int i=0; i < numberOfModels; i++){
-        if(transformed_models[i].modelType == 0){
-            continue;
+void triangle_rasterization(Model_transformed model){
+    //for(int i=0; i < numberOfModels; i++){
+        //cout << model.modelId << endl;
+        if(model.modelType == 0){
+            return;
         }
-        for(int j=0; j < transformed_models[i].numberOfTriangles; j++){
-            int x_0 = transformed_models[i].transformed_triangles[j].vertices[0][0];
-            int x_1 = transformed_models[i].transformed_triangles[j].vertices[1][0];
-            int x_2 = transformed_models[i].transformed_triangles[j].vertices[2][0];
+        for(int j=0; j < model.numberOfTriangles; j++){
+            int x_0 = model.transformed_triangles[j].vertices[0][0];
+            int x_1 = model.transformed_triangles[j].vertices[1][0];
+            int x_2 = model.transformed_triangles[j].vertices[2][0];
 
-            int y_0 = transformed_models[i].transformed_triangles[j].vertices[0][1];
-            int y_1 = transformed_models[i].transformed_triangles[j].vertices[1][1];
-            int y_2 = transformed_models[i].transformed_triangles[j].vertices[2][1];
+            int y_0 = model.transformed_triangles[j].vertices[0][1];
+            int y_1 = model.transformed_triangles[j].vertices[1][1];
+            int y_2 = model.transformed_triangles[j].vertices[2][1];
 
 
-            Color c_0 = transformed_models[i].transformed_triangles[j].colors[0];
-            Color c_1 = transformed_models[i].transformed_triangles[j].colors[1];
-            Color c_2 = transformed_models[i].transformed_triangles[j].colors[2];
+            Color c_0 = model.transformed_triangles[j].colors[0];
+            Color c_1 = model.transformed_triangles[j].colors[1];
+            Color c_2 = model.transformed_triangles[j].colors[2];
 
             int x_min = smallest(x_0, x_1, x_2);
             int y_min = smallest(y_0, y_1, y_2);
@@ -732,7 +733,7 @@ void triangle_rasterization(){
 
 
         }
-    }
+    //}
 }
 
 void clear_transformed_models(){
@@ -746,8 +747,14 @@ void rasterization_stage(Camera& cam){
 
     /* Draw the boundaries for the models using the
        midpoint line drawing algorithm */
-    midpoint_algorithm();
-    triangle_rasterization();
+
+       for(int i=0; i < numberOfModels; i++){
+         midpoint_algorithm(transformed_models[i]);
+         triangle_rasterization(transformed_models[i]);
+       }
+
+
+
     /* Clear transformed models for the next
        iteration */
     clear_transformed_models();
