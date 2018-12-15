@@ -5,9 +5,11 @@ expected outputs. These are stored in "hw1_sample_scenes" and
 The source codes demonstrate how you can read an XML file and
 save your output image in PPM format.
 
+
 Compilation
 -----------
 Just type "make" and it should produce an executable called "main"
+
 
 Usage
 -----
