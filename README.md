@@ -20,3 +20,5 @@ The results of the algorithm for the empty box scene is given below:
 Also, the image below represents the results of the algorithm for the horse and mug scene:
 
 ![Horse and Mug Midpoint](Homework2/images/horse_and_mug_midpoint.png)
+
+## [Homework 2](/Homework3)
