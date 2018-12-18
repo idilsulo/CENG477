@@ -610,7 +610,7 @@ void midpoint_algorithm(Model_transformed model){
                         }
                     }
                 }
-                else if(1.0 < m){
+                else if(1.0 <= m){
                     x = min(x_0, x_1);
                     y = min(y_0, y_1);
                     d = 2*abs(x_1-x_0)-abs(y_1-y_0);
