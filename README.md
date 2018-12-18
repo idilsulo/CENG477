@@ -21,4 +21,4 @@ Also, the image below represents the results of the algorithm for the horse and 
 
 ![Horse and Mug Midpoint](Homework2/images/horse_and_mug_midpoint.png)
 
-## [Homework 2](/Homework3)
+## [Homework 3](/Homework3)
