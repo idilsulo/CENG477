@@ -13,7 +13,7 @@ and Rasterization stages of the Forward Rendering Pipeline.
 
 * Then, we switched to the implementation of the Rasterization stage. The Midpoint algorithm had been implemented for this purpose. This algorithm is used to draw the lines which combines the vertices that are shown in the image above. 
 
-The results of the algorithm for the empty pox scene is given below:
+The results of the algorithm for the empty box scene is given below:
 
 ![Empty Box Midpoint](Homework2/images/empty_box_midpoint.png)
 
