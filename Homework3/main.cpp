@@ -18,7 +18,7 @@ int widthTexture, heightTexture;
 
 glm::vec3 camera_up = glm::vec3(0.0, 1.0, 0.0);
 glm::vec3 camera_gaze = glm::vec3(0.0, 0.0, 1.0);
-glm::vec3 camera_pos = glm::vec3(widthTexture/2, widthTexture/10, -widthTexture/4);
+glm::vec3 camera_pos;
 
 GLfloat camera_speed = 0.0f;
 
@@ -50,6 +50,8 @@ bool viewport_flag = false;
 
 void cameraSpecifications(){
 
+    camera_pos = glm::vec3(widthTexture/2, widthTexture/10, -widthTexture/4);
+
     glm::mat4 M_projection = glm::perspective(fovy, aspect_ratio, near, far);
 
     /* template <typename T, precision P>
@@ -70,7 +72,10 @@ void cameraSpecifications(){
 
     glm::mat4 M_normal = glm::inverseTranspose(M_view);
 
-    GLint loc_model_view_projection = glGetUniformLocation(idProgramShader, "M_mvp");
+    GLint loc_model_view = glGetUniformLocation(idProgramShader, "MV");
+    glUniformMatrix4fv(loc_model_view, 1, GL_FALSE, &M_view[0][0]);
+
+    GLint loc_model_view_projection = glGetUniformLocation(idProgramShader, "MVP");
     glUniformMatrix4fv(loc_model_view_projection, 1, GL_FALSE, &M_model_view_projection[0][0]);
 
     GLint loc_normal = glGetUniformLocation(idProgramShader, "M_norm");
