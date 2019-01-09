@@ -2,6 +2,10 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/matrix_inverse.hpp"
+#include "glm/gtx/rotate_vector.hpp"
+
+//#include "glm/gtc/type_ptr.hpp"
+
 
 static GLFWwindow * win = NULL;
 
@@ -16,9 +20,10 @@ int widthTexture, heightTexture;
 
 /***********************Variables defined by me *****************************/
 
+glm::vec3 camera_pos;
 glm::vec3 camera_up = glm::vec3(0.0, 1.0, 0.0);
 glm::vec3 camera_gaze = glm::vec3(0.0, 0.0, 1.0);
-glm::vec3 camera_pos;
+glm::vec3 camera_cross = cross(camera_up, camera_gaze);
 
 GLfloat camera_speed = 0.0f;
 
@@ -81,7 +86,7 @@ void cameraSpecifications(){
     GLint loc_normal = glGetUniformLocation(idProgramShader, "M_norm");
     glUniformMatrix4fv(loc_normal, 1, GL_FALSE, &M_normal[0][0]);
 
-    GLint loc_camera_pos = glGetUniformLocation(idProgramShader, "cam_pos");
+    GLint loc_camera_pos = glGetUniformLocation(idProgramShader, "cameraPosition");
     glUniform3fv(loc_camera_pos, 1, &camera_pos[0]);
 }
 
@@ -152,6 +157,100 @@ void render(){
 
 }
 
+static void keyPressCallback(GLFWwindow *win, int key, int scode, int act, int mods){
+
+    bool checkFullScreen = false;
+    if(act == GLFW_PRESS){
+        switch(key){
+            case GLFW_KEY_F:
+                checkFullScreen = true;
+                break;
+
+            case GLFW_KEY_ESCAPE:
+                glfwSetWindowShouldClose(win, GLFW_TRUE);
+                break;
+
+            case GLFW_KEY_U:
+                camera_speed += 0.25;
+                break;
+
+            case GLFW_KEY_J:
+                camera_speed -= 0.25;
+                break;
+        }
+    }
+
+    if(checkFullScreen){
+
+        checkFullScreen = false;
+        viewport_flag = true;
+
+        if(fullscreen_mode){
+
+            fullscreen_mode = false;
+
+            current_heigthDisplay = heightDisplay;
+            current_widthDisplay = widthDisplay;
+            glfwSetWindowMonitor(win, nullptr, 0, 0, current_widthDisplay, current_heigthDisplay, 0);
+
+        }
+        else{
+
+            fullscreen_mode = true;
+
+            current_heigthDisplay = vidmode->height;
+            current_widthDisplay = vidmode->width;
+
+            glfwSetWindowMonitor(win, primary_monitor,0,0,current_widthDisplay, current_heigthDisplay, vidmode->refreshRate);
+
+        }
+    }
+
+    if(act == GLFW_PRESS || act == GLFW_REPEAT){
+        switch(key){
+            case GLFW_KEY_O:
+            {
+                height_factor += 0.5;
+                GLint loc_height_factor = glGetUniformLocation(idProgramShader, "height_factor");
+                glUniform1f(loc_height_factor, height_factor);
+                break;
+            }
+            case GLFW_KEY_L:
+            {
+                height_factor -= 0.5;
+                GLint loc_height_factor = glGetUniformLocation(idProgramShader, "height_factor");
+                glUniform1f(loc_height_factor, height_factor);
+                break;
+            }
+            case GLFW_KEY_A:
+            {
+                camera_cross = glm::rotate(camera_cross, 0.01f, camera_up);
+                camera_gaze = glm::rotate(camera_gaze, 0.01f, camera_up);
+                break;
+            }
+            case GLFW_KEY_D:
+            {
+                camera_cross = glm::rotate(camera_cross, -0.01f, camera_up);
+                camera_gaze = glm::rotate(camera_gaze, -0.01f, camera_up);
+                break;
+            }
+            case GLFW_KEY_S:
+            {
+                camera_up = glm::rotate(camera_up, 0.01f, camera_cross);
+                camera_gaze = glm::rotate(camera_gaze, 0.01f, camera_cross);
+                break;
+            }
+            case GLFW_KEY_W:
+            {
+                camera_up = glm::rotate(camera_up, -0.01f, camera_cross);
+                camera_gaze = glm::rotate(camera_gaze, -0.01f, camera_cross);
+                break;
+            }
+        }
+    }
+}
+
+
 static void errorCallback(int error,
   const char * description) {
   fprintf(stderr, "Error: %s\n", description);
@@ -174,6 +273,9 @@ int main(int argc, char * argv[]) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
+  //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
   win = glfwCreateWindow(600, 600, "CENG477 - HW3", NULL, NULL);
 
   if (!win) {
@@ -195,6 +297,10 @@ int main(int argc, char * argv[]) {
   initTexture(argv[1], & widthTexture, & heightTexture);
 
   /***************************************************************************/
+
+  /* ############################################### */
+  glfwSetKeyCallback(win, keyPressCallback);
+  /* ############################################### */
 
   // Set camera specifications
   cameraSpecifications();
