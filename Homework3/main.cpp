@@ -45,7 +45,7 @@ GLfloat aspect_ratio = 1;
 GLfloat near = 0.1;
 GLfloat far = 1000;
 
-GLfloat height_factor = 10.0f;
+GLfloat heightFactor = 10.0f;
 
 int vertex_cnt;
 glm::vec3* vertices;
@@ -54,8 +54,6 @@ bool viewport_flag = false;
 /****************************************************************************/
 
 void cameraSpecifications(){
-
-    camera_pos = glm::vec3(widthTexture/2, widthTexture/10, -widthTexture/4);
 
     glm::mat4 M_projection = glm::perspective(fovy, aspect_ratio, near, far);
 
@@ -134,8 +132,8 @@ void setLocations(){
     GLint loc_height_texture = glGetUniformLocation(idProgramShader, "heightTexture");
     glUniform1i(loc_height_texture, heightTexture);
 
-    GLint loc_height_factor = glGetUniformLocation(idProgramShader, "height_factor");
-    glUniform1f(loc_height_factor, height_factor);
+    GLint loc_heightFactor = glGetUniformLocation(idProgramShader, "heightFactor");
+    glUniform1f(loc_heightFactor, heightFactor);
 }
 
 
@@ -156,7 +154,8 @@ void render(){
     glDisableClientState(GL_VERTEX_ARRAY);
 
 }
-
+/* As stated in the glfw documentation,
+    The callback function receives the keyboard key, platform-specific scancode, key action and modifier bits. */
 static void keyPressCallback(GLFWwindow *win, int key, int scode, int act, int mods){
 
     bool checkFullScreen = false;
@@ -210,16 +209,16 @@ static void keyPressCallback(GLFWwindow *win, int key, int scode, int act, int m
         switch(key){
             case GLFW_KEY_O:
             {
-                height_factor += 0.5;
-                GLint loc_height_factor = glGetUniformLocation(idProgramShader, "height_factor");
-                glUniform1f(loc_height_factor, height_factor);
+                heightFactor += 0.5;
+                GLint loc_heightFactor = glGetUniformLocation(idProgramShader, "heightFactor");
+                glUniform1f(loc_heightFactor, heightFactor);
                 break;
             }
             case GLFW_KEY_L:
             {
-                height_factor -= 0.5;
-                GLint loc_height_factor = glGetUniformLocation(idProgramShader, "height_factor");
-                glUniform1f(loc_height_factor, height_factor);
+                heightFactor -= 0.5;
+                GLint loc_heightFactor = glGetUniformLocation(idProgramShader, "heightFactor");
+                glUniform1f(loc_heightFactor, heightFactor);
                 break;
             }
             case GLFW_KEY_A:
@@ -273,6 +272,7 @@ int main(int argc, char * argv[]) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
+  // Necessary commands to work on MAC OS, should be closed for submission
   //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -298,12 +298,12 @@ int main(int argc, char * argv[]) {
 
   /***************************************************************************/
 
-  /* ############################################### */
+  // Set the keyPressCallback function to respond user input given by the keyboard
   glfwSetKeyCallback(win, keyPressCallback);
-  /* ############################################### */
 
   // Set camera specifications
   cameraSpecifications();
+  camera_pos = glm::vec3(widthTexture/2, widthTexture/10, -widthTexture/4);
   // Set the viewport
   glViewport(0,0, widthDisplay, heightDisplay);
   // Create the meshes
