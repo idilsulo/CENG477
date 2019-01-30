@@ -50,5 +50,4 @@ void main() {
 
   // compute the color using the following equation
   color = vec4(clamp( textureColor.xyz * vec3(ambient + diffuse + specular), 0.0, 1.0), 1.0);
-  //color = vec4(clamp( textureColor.xyz + vec3(ambient + diffuse + specular), 0.0, 1.0), 1.0);
 }
