@@ -23,6 +23,10 @@ Also, the image below represents the results of the algorithm for the horse and 
 
 ![Horse and Mug Midpoint](images/horse_and_mug_midpoint.png)
 
+* A sample for the final version of the output images can be found below:
+
+![Horse and Mug](images/horse_and_mug.png)
+
 ## [Homework 3](/Homework3)
 
 The aim of this assignment is to implement an OpenGL program to render a given scene with the help of the vertex and fragment shaders in order to display a texture image as a height map to fly through the scene in an interactive manner by processing the keyboard input.
